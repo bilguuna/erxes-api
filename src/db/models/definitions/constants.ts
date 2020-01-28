@@ -354,9 +354,9 @@ export const BOARD_TYPES = {
 };
 
 export const MESSAGE_TYPES = {
-  VIDEO: 'video',
+  VIDEO_CAll: 'videoCall',
   TEXT: 'text',
-  ALL: ['video', 'text'],
+  ALL: ['videoCall', 'text'],
 };
 
 // module constants

@@ -1,5 +1,5 @@
 import { Brands, Channels, ConversationMessages, Conversations, Tags } from '../../../db/models';
-import { CONVERSATION_STATUSES, KIND_CHOICES } from '../../../db/models/definitions/constants';
+import { CONVERSATION_STATUSES, KIND_CHOICES, MESSAGE_TYPES } from '../../../db/models/definitions/constants';
 import { IMessageDocument } from '../../../db/models/definitions/conversationMessages';
 import { debugExternalApi } from '../../../debuggers';
 import { checkPermission, moduleRequireLogin } from '../../permissions/wrappers';
@@ -298,9 +298,22 @@ const conversationQueries = {
     }).countDocuments();
   },
 
-  async conversationsGetVideoRoom(_root, { _id }, { dataSources }: IContext) {
+  async conversationsGetVideoRoom(_root, { _id }, { dataSources, user }: IContext) {
     try {
-      const response = await dataSources.IntegrationsAPI.fetchApi('/daily/room', { conversationId: _id });
+      const doc = {
+        conversationId: _id,
+        internal: false,
+        contentType: MESSAGE_TYPES.VIDEO_CAll,
+      };
+
+      const message = await ConversationMessages.addMessage(doc, user._id);
+
+      const response = await dataSources.IntegrationsAPI.fetchApi('/daily/room', { messageId: message._id });
+
+      await ConversationMessages.updateOne(
+        { _id: message._id },
+        { $set: { content: `${response.url}?t=${response.token}` } },
+      );
 
       return {
         url: response.url,

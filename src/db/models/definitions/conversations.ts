@@ -16,8 +16,6 @@ export interface IConversation {
   closedAt?: Date;
   closedUserId?: string;
 
-  activeVideoRoom?: string;
-
   status?: string;
   messageCount?: number;
   tagIds?: string[];
@@ -48,8 +46,6 @@ export const conversationSchema = new Schema({
   readUserIds: field({ type: [String] }),
   createdAt: field({ type: Date, index: true }),
   updatedAt: field({ type: Date }),
-
-  activeVideoRoom: field({ type: String }),
 
   closedAt: field({
     type: Date,
