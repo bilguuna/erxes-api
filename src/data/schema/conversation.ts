@@ -72,6 +72,7 @@ export const types = `
     user: User
     customer: Customer
     mailData: MailData
+    dailyStatus: String
     contentType: String
   }
 
@@ -153,7 +154,6 @@ export const types = `
     url: String!
     name: String!
     created: Boolean
-    token: String
     ownerToken: String!
   }
 

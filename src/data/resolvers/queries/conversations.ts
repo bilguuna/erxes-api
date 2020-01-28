@@ -303,24 +303,44 @@ const conversationQueries = {
       const doc = {
         conversationId: _id,
         internal: false,
-        contentType: MESSAGE_TYPES.VIDEO_CAll,
+        contentType: MESSAGE_TYPES.VIDEO_CALL,
+        content: 'New message',
       };
 
-      const message = await ConversationMessages.addMessage(doc, user._id);
+      // getting last call
+      const message = await ConversationMessages.findOne({
+        conversationId: _id,
+        contentType: MESSAGE_TYPES.VIDEO_CALL,
+      }).sort({ createdAt: -1 });
 
-      const response = await dataSources.IntegrationsAPI.fetchApi('/daily/room', { messageId: message._id });
+      let status = 'end';
+      let messageId;
 
-      await ConversationMessages.updateOne(
-        { _id: message._id },
-        { $set: { content: `${response.url}?t=${response.token}` } },
-      );
+      if (message) {
+        messageId = message._id;
+
+        status = await dataSources.IntegrationsAPI.fetchApi('/daily/get-status', { messageId });
+      }
+
+      if (status === 'end') {
+        const createdMessage = await ConversationMessages.addMessage(doc, user._id);
+
+        messageId = createdMessage._id;
+      }
+
+      const response = await dataSources.IntegrationsAPI.fetchApi('/daily/room', { messageId });
+
+      if (status === 'end') {
+        const content = `${response.url}?t=${response.token}`;
+
+        await ConversationMessages.updateOne({ _id: messageId }, { $set: { content } });
+      }
 
       return {
         url: response.url,
         name: response.name,
-        created: response.created || false,
-        token: response.token || '',
         ownerToken: response.ownerToken,
+        created: status === 'end',
       };
     } catch (e) {
       debugExternalApi(e.message);
