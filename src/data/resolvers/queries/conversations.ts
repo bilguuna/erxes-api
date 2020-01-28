@@ -304,7 +304,7 @@ const conversationQueries = {
         conversationId: _id,
         internal: false,
         contentType: MESSAGE_TYPES.VIDEO_CALL,
-        content: 'New message',
+        content: 'Video call',
       };
 
       // getting last call
