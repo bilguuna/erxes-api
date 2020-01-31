@@ -1014,8 +1014,8 @@ describe('conversationQueries', () => {
   });
 
   test('Get video room', async () => {
-    expect.assertions(4);
     process.env.INTEGRATIONS_API_DOMAIN = 'http://fake.erxes.io';
+    expect.assertions(4);
 
     const qry = `
       query conversationsGetVideoRoom($_id: String!) {
@@ -1028,9 +1028,10 @@ describe('conversationQueries', () => {
     `;
 
     const dataSources = { IntegrationsAPI: new IntegrationsAPI() };
+    const conversation = await conversationFactory();
 
     try {
-      await graphqlRequest(qry, 'conversationsGetVideoRoom', { _id: 'fakeId' }, { dataSources });
+      await graphqlRequest(qry, 'conversationsGetVideoRoom', { _id: conversation._id }, { dataSources });
     } catch (e) {
       expect(e[0].message).toBe('Integrations api is not running');
     }
@@ -1041,7 +1042,7 @@ describe('conversationQueries', () => {
 
     spy.mockImplementation(() => Promise.resolve(fakeResponse));
 
-    const response = await graphqlRequest(qry, 'conversationsGetVideoRoom', { _id: 'fakeId' }, { dataSources });
+    const response = await graphqlRequest(qry, 'conversationsGetVideoRoom', { _id: conversation._id }, { dataSources });
 
     expect(response.url).toBe(fakeResponse.url);
     expect(response.name).toBe(fakeResponse.name);
