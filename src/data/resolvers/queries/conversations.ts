@@ -1,7 +1,6 @@
 import { Brands, Channels, ConversationMessages, Conversations, Tags } from '../../../db/models';
-import { CONVERSATION_STATUSES, KIND_CHOICES, MESSAGE_TYPES } from '../../../db/models/definitions/constants';
+import { CONVERSATION_STATUSES, KIND_CHOICES } from '../../../db/models/definitions/constants';
 import { IMessageDocument } from '../../../db/models/definitions/conversationMessages';
-import { debugExternalApi } from '../../../debuggers';
 import { checkPermission, moduleRequireLogin } from '../../permissions/wrappers';
 import { IContext } from '../../types';
 import QueryBuilder, { IListArgs } from './conversationQueryBuilder';
@@ -296,57 +295,6 @@ const conversationQueries = {
         },
       ],
     }).countDocuments();
-  },
-
-  async conversationsGetVideoRoom(_root, { _id }, { dataSources, user }: IContext) {
-    try {
-      const doc = {
-        conversationId: _id,
-        internal: false,
-        contentType: MESSAGE_TYPES.VIDEO_CALL,
-        content: 'Video call',
-      };
-
-      // getting last call
-      const message = await ConversationMessages.findOne({
-        conversationId: _id,
-        contentType: MESSAGE_TYPES.VIDEO_CALL,
-      }).sort({ createdAt: -1 });
-
-      let status = 'end';
-      let messageId;
-
-      if (message) {
-        messageId = message._id;
-
-        status = await dataSources.IntegrationsAPI.fetchApi('/daily/get-status', { messageId });
-      }
-
-      if (status === 'end') {
-        const createdMessage = await ConversationMessages.addMessage(doc, user._id);
-
-        messageId = createdMessage._id;
-      }
-
-      const response = await dataSources.IntegrationsAPI.fetchApi('/daily/room', { messageId });
-
-      if (status === 'end') {
-        const content = `${response.url}?t=${response.token}`;
-
-        await ConversationMessages.updateOne({ _id: messageId }, { $set: { content } });
-      }
-
-      return {
-        url: response.url,
-        name: response.name,
-        ownerToken: response.ownerToken,
-        created: status === 'end',
-      };
-    } catch (e) {
-      debugExternalApi(e.message);
-
-      throw new Error(e.message);
-    }
   },
 };
 

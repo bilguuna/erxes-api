@@ -40,8 +40,8 @@ export default {
     });
   },
 
-  async dailyStatus(message: IMessageDocument, _args, { dataSources }: IContext) {
-    const conversation = await Conversations.findOne({ _id: message.conversationId }).lean();
+  async videoCallData(message: IMessageDocument, _args, { dataSources }: IContext) {
+    const conversation = await Conversations.findOne({ _id: message.conversationId });
 
     if (!conversation || message.internal) {
       return null;
@@ -51,6 +51,10 @@ export default {
       return null;
     }
 
-    return dataSources.IntegrationsAPI.fetchApi('/daily/get-status', { messageId: message._id });
+    const response = await dataSources.IntegrationsAPI.fetchApi('/daily/room', { erxesApiMessageId: message._id });
+
+    console.log('response: ', response);
+
+    return response;
   },
 };

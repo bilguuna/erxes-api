@@ -5,6 +5,7 @@ import Messages from '../../../db/models/ConversationMessages';
 import {
   CONVERSATION_STATUSES,
   KIND_CHOICES,
+  MESSAGE_TYPES,
   NOTIFICATION_CONTENT_TYPES,
   NOTIFICATION_TYPES,
 } from '../../../db/models/definitions/constants';
@@ -402,7 +403,32 @@ const conversationMutations = {
 
   async conversationDeleteVideoChatRoom(_root, { name }, { dataSources }: IContext) {
     try {
-      return await dataSources.IntegrationsAPI.deleteDailyVideoChatRoom(name);
+      const response = await dataSources.IntegrationsAPI.deleteDailyVideoChatRoom(name);
+
+      return response.deleted;
+    } catch (e) {
+      debugExternalApi(e.message);
+
+      throw new Error(e.message);
+    }
+  },
+
+  async conversationCreateVideoChatRoom(_root, { _id }, { dataSources, user }: IContext) {
+    try {
+      const doc = {
+        conversationId: _id,
+        internal: false,
+        contentType: MESSAGE_TYPES.VIDEO_CALL,
+      };
+
+      console.log('doc: ', doc);
+
+      const message = await ConversationMessages.addMessage(doc, user._id);
+
+      return await dataSources.IntegrationsAPI.createDailyVideoChatRoom({
+        erxesApiConversationId: _id,
+        erxesApiMessageId: message._id,
+      });
     } catch (e) {
       debugExternalApi(e.message);
 

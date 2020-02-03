@@ -35,6 +35,7 @@ export const types = `
     assignedUser: User
     participatedUsers: [User]
     participatorCount: Int
+    videoCallData: VideoCallData
   }
 
   type EngageData {
@@ -72,7 +73,7 @@ export const types = `
     user: User
     customer: Customer
     mailData: MailData
-    dailyStatus: String
+    videoCallData: VideoCallData
     contentType: String
   }
 
@@ -150,16 +151,10 @@ export const types = `
     unreadCount: Int
   }
 
-  type VideoChatRoom {
-    url: String!
-    name: String!
-    created: Boolean
-    ownerToken: String!
-  }
-
-  type VideoChatRoomDelete {
-    deleted: Boolean
+  type VideoCallData {
+    url: String
     name: String
+    status: String
   }
 
   input ConversationMessageParams {
@@ -220,7 +215,6 @@ export const queries = `
   conversationDetail(_id: String!): Conversation
   conversationsGetLast(${filterParams}): Conversation
   conversationsTotalUnreadCount: Int
-  conversationsGetVideoRoom(_id: String!): VideoChatRoom
 `;
 
 export const mutations = `
@@ -237,5 +231,6 @@ export const mutations = `
   conversationsUnassign(_ids: [String]!): [Conversation]
   conversationsChangeStatus(_ids: [String]!, status: String!): [Conversation]
   conversationMarkAsRead(_id: String): Conversation
-  conversationDeleteVideoChatRoom(name: String!): VideoChatRoomDelete
+  conversationDeleteVideoChatRoom(name: String!): Boolean
+  conversationCreateVideoChatRoom(_id: String!): VideoCallData
 `;
