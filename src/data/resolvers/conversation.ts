@@ -104,16 +104,8 @@ export default {
       return null;
     }
 
-    const response = await dataSources.IntegrationsAPI.fetchApi('/daily/get-active-room', {
+    return dataSources.IntegrationsAPI.fetchApi('/daily/get-active-room', {
       erxesApiConversationId: conversation._id,
     });
-
-    console.log('response: ', response);
-
-    if (response === {}) {
-      return null;
-    }
-
-    return response;
   },
 };

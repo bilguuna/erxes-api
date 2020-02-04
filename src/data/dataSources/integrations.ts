@@ -51,8 +51,8 @@ export default class IntegrationsAPI extends RESTDataSource {
     return this.delete(`/daily/rooms/${name}`);
   }
 
-  public async createDailyVideoChatRoom() {
-    return this.post('/daily/room');
+  public async createDailyVideoChatRoom(params) {
+    return this.post('/daily/room', params);
   }
 
   public async fetchApi(path, params) {

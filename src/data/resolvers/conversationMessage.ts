@@ -51,10 +51,6 @@ export default {
       return null;
     }
 
-    const response = await dataSources.IntegrationsAPI.fetchApi('/daily/room', { erxesApiMessageId: message._id });
-
-    console.log('response: ', response);
-
-    return response;
+    return dataSources.IntegrationsAPI.fetchApi('/daily/room', { erxesApiMessageId: message._id });
   },
 };

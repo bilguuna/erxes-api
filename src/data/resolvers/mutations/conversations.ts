@@ -421,8 +421,6 @@ const conversationMutations = {
         contentType: MESSAGE_TYPES.VIDEO_CALL,
       };
 
-      console.log('doc: ', doc);
-
       const message = await ConversationMessages.addMessage(doc, user._id);
 
       return await dataSources.IntegrationsAPI.createDailyVideoChatRoom({
