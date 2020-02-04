@@ -403,9 +403,7 @@ const conversationMutations = {
 
   async conversationDeleteVideoChatRoom(_root, { name }, { dataSources }: IContext) {
     try {
-      const response = await dataSources.IntegrationsAPI.deleteDailyVideoChatRoom(name);
-
-      return response.deleted;
+      return await dataSources.IntegrationsAPI.deleteDailyVideoChatRoom(name);
     } catch (e) {
       debugExternalApi(e.message);
 

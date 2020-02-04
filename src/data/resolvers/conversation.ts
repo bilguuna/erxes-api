@@ -95,7 +95,7 @@ export default {
   },
 
   async videoCallData(conversation: IConversationDocument, _args, { dataSources }: IContext) {
-    const message = await ConversationMessages.find({
+    const message = await ConversationMessages.findOne({
       conversationId: conversation._id,
       contentType: MESSAGE_TYPES.VIDEO_CALL,
     });

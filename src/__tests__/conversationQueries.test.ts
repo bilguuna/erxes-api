@@ -12,6 +12,7 @@ import {
 import { Brands, Channels, Conversations, Integrations, Tags, Users } from '../db/models';
 
 import { IntegrationsAPI } from '../data/dataSources';
+import { MESSAGE_TYPES } from '../db/models/definitions/constants';
 import './setup.ts';
 
 describe('conversationQueries', () => {
@@ -87,6 +88,11 @@ describe('conversationQueries', () => {
         messageCount
         number
         tagIds
+        videoCallData {
+          url
+          name
+           status
+        }
         messages {
           _id
           content
@@ -154,6 +160,11 @@ describe('conversationQueries', () => {
           customer { _id }
           mailData {
             messageId
+          }
+          videoCallData {
+            url
+            name
+             status
           }
         }
       }
@@ -226,6 +237,48 @@ describe('conversationQueries', () => {
     });
 
     expect(responses.length).toBe(4);
+  });
+
+  test('Conversation message video call', async () => {
+    const conversation = await conversationFactory();
+    await conversationMessageFactory({ conversationId: conversation._id });
+
+    let responses = await graphqlRequest(qryConversationMessage, 'conversationMessages', {
+      conversationId: conversation._id,
+    });
+
+    expect(responses[0].videoCallData).toBeNull();
+
+    await conversationMessageFactory({ internal: false, conversationId: conversation._id });
+
+    responses = await graphqlRequest(qryConversationMessage, 'conversationMessages', {
+      conversationId: conversation._id,
+    });
+
+    expect(responses[0].videoCallData).toBeNull();
+
+    await conversationMessageFactory({
+      conversationId: conversation._id,
+      contentType: MESSAGE_TYPES.VIDEO_CALL,
+      internal: false,
+    });
+
+    process.env.INTEGRATIONS_API_DOMAIN = 'http://fake.erxes.io';
+
+    const dataSources = { IntegrationsAPI: new IntegrationsAPI() };
+
+    try {
+      await graphqlRequest(
+        qryConversationMessage,
+        'conversationMessages',
+        {
+          conversationId: conversation._id,
+        },
+        { dataSources },
+      );
+    } catch (e) {
+      expect(e[0].message).toBe('Integrations api is not running');
+    }
   });
 
   test('Conversation messages (messenger kind)', async () => {
@@ -915,6 +968,39 @@ describe('conversationQueries', () => {
     }
   });
 
+  test('Conversation detail video call', async () => {
+    process.env.INTEGRATIONS_API_DOMAIN = 'http://fake.erxes.io';
+
+    const messengerConversation = await conversationFactory();
+
+    const dataSources = { IntegrationsAPI: new IntegrationsAPI() };
+
+    const response = await graphqlRequest(
+      qryConversationDetail,
+      'conversationDetail',
+      { _id: messengerConversation._id },
+      { user, dataSources },
+    );
+
+    expect(response.videoCallData).toBeNull();
+
+    await conversationMessageFactory({
+      conversationId: messengerConversation._id,
+      contentType: MESSAGE_TYPES.VIDEO_CALL,
+    });
+
+    try {
+      await graphqlRequest(
+        qryConversationDetail,
+        'conversationDetail',
+        { _id: messengerConversation._id },
+        { user, dataSources },
+      );
+    } catch (e) {
+      expect(e[0].message).toBe('Integrations api is not running');
+    }
+  });
+
   test('Conversation detail callpro audio', async () => {
     process.env.INTEGRATIONS_API_DOMAIN = 'http://fake.erxes.io';
 
@@ -1011,43 +1097,5 @@ describe('conversationQueries', () => {
     } catch (e) {
       expect(e[0].message).toBe('Integrations api is not running');
     }
-  });
-
-  test('Get video room', async () => {
-    process.env.INTEGRATIONS_API_DOMAIN = 'http://fake.erxes.io';
-    expect.assertions(4);
-
-    const qry = `
-      query conversationsGetVideoRoom($_id: String!) {
-        conversationsGetVideoRoom(_id: $_id) {
-          url
-          name
-          ownerToken
-        }
-      }
-    `;
-
-    const dataSources = { IntegrationsAPI: new IntegrationsAPI() };
-    const conversation = await conversationFactory();
-
-    try {
-      await graphqlRequest(qry, 'conversationsGetVideoRoom', { _id: conversation._id }, { dataSources });
-    } catch (e) {
-      expect(e[0].message).toBe('Integrations api is not running');
-    }
-
-    const spy = jest.spyOn(dataSources.IntegrationsAPI, 'fetchApi');
-
-    const fakeResponse = { url: 'http://fake.erxes.io', name: 'name', ownerToken: 'ownerToken' };
-
-    spy.mockImplementation(() => Promise.resolve(fakeResponse));
-
-    const response = await graphqlRequest(qry, 'conversationsGetVideoRoom', { _id: conversation._id }, { dataSources });
-
-    expect(response.url).toBe(fakeResponse.url);
-    expect(response.name).toBe(fakeResponse.name);
-    expect(response.ownerToken).toBe(fakeResponse.ownerToken);
-
-    spy.mockRestore();
   });
 });
