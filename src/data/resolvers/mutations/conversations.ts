@@ -266,6 +266,10 @@ const conversationMutations = {
       requestName = 'replyTwitterDm';
     }
 
+    if (kind === KIND_CHOICES.SMOOCH_TELEGRAM) {
+      requestName = 'replyTelegram';
+    }
+
     await sendConversationToIntegrations(type, integrationId, conversationId, requestName, doc, dataSources, action);
 
     const dbMessage = await ConversationMessages.getMessage(message._id);

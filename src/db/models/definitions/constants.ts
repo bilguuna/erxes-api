@@ -66,6 +66,7 @@ export const KIND_CHOICES = {
   CALLPRO: 'callpro',
   TWITTER_DM: 'twitter-dm',
   CHATFUEL: 'chatfuel',
+  SMOOCH_TELEGRAM: 'smooch-telegram',
   ALL: [
     'messenger',
     'lead',
@@ -80,6 +81,7 @@ export const KIND_CHOICES = {
     'nylas-outlook',
     'nylas-yahoo',
     'twitter-dm',
+    'smooch-telegram',
   ],
 };
 
@@ -97,6 +99,7 @@ export const INTEGRATION_NAMES_MAP = {
   'nylas-outlook': 'Outook',
   'nylas-yahoo': 'Yahoo',
   'twitter-dm': 'Twitter dm',
+  'smooch-telegram': ' Telegram',
 };
 
 // messenger data availability constants
